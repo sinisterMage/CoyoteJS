@@ -1,4 +1,4 @@
-// coyote-js/http — a small, dependency-free fetch-based JSON client.
+// @sinistermage/coyote-js/http — a small, dependency-free fetch-based JSON client.
 //
 //   const api = createHttp({ baseURL: '/api', getToken })
 //   const me = await api<Me>('/me')                       // GET, bearer injected

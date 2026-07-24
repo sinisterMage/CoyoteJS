@@ -1,4 +1,4 @@
-// coyote-js/http — public type surface for the fetch-based JSON client.
+// @sinistermage/coyote-js/http — public type surface for the fetch-based JSON client.
 //
 // Kept dependency-free: these interfaces describe the request/response shape of
 // `createHttp` and the errors it throws. They intentionally mirror the

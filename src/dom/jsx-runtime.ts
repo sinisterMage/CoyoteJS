@@ -1,4 +1,4 @@
-// Automatic JSX runtime target (jsxImportSource: "coyote"). The compiler emits
+// Automatic JSX runtime target (jsxImportSource: "@sinistermage/coyote-js"). The compiler emits
 // `jsx`/`jsxs`/`jsxDEV(type, props, key)` and imports `Fragment` from here.
 // Children arrive on `props.children` (a single node or an array); we delegate
 // straight to `h`.
@@ -33,7 +33,7 @@ export function jsxDEV(type: any, props: any, _key?: any): CoyoteNode {
   return jsxImpl(type, props)
 }
 
-// The JSX namespace TypeScript resolves via jsxImportSource="coyote".
+// The JSX namespace TypeScript resolves via jsxImportSource="@sinistermage/coyote-js".
 // IntrinsicElements is kept permissive (any tag/props) so app JSX typechecks;
 // `ElementChildrenAttribute` tells TS the children prop key.
 export namespace JSX {

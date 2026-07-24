@@ -1,4 +1,4 @@
-// coyote-js/loader — a small, generic, worker-first WASM loader.
+// @sinistermage/coyote-js/loader — a small, generic, worker-first WASM loader.
 //
 //   const { handle, done } = loadWasm({ wasmUrl: '/app.wasm', dataUrl: '/data.bin' })
 //   effect(() => setProgress(handle.progress.percent()))   // reactive UI

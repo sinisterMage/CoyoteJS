@@ -30,7 +30,7 @@ export default defineConfig({
     rollupOptions: {
       // Keep the self-referential JSX runtime import external so it resolves via
       // the package's own "exports" (./jsx-runtime) at consumer runtime.
-      external: [/^coyote-js(\/.*)?$/],
+      external: [/^@sinistermage\/coyote-js(\/.*)?$/],
       output: {
         preserveModules: true,
         preserveModulesRoot: 'src',
@@ -42,6 +42,6 @@ export default defineConfig({
     target: 'es2022',
   },
   // Automatic JSX runtime → the package's own jsx-runtime (kept external above).
-  esbuild: { jsx: 'automatic', jsxImportSource: 'coyote-js' },
+  esbuild: { jsx: 'automatic', jsxImportSource: '@sinistermage/coyote-js' },
   worker: { format: 'es' },
 })

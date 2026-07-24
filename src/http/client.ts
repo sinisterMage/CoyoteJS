@@ -1,4 +1,4 @@
-// coyote-js/http — a small, dependency-free fetch-based JSON client.
+// @sinistermage/coyote-js/http — a small, dependency-free fetch-based JSON client.
 //
 // createHttp({ baseURL, getToken }) returns a callable HttpClient:
 //

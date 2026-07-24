@@ -6,7 +6,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
     "types": ["node"],
     "jsx": "react-jsx",
-    "jsxImportSource": "coyote-js",
+    "jsxImportSource": "@sinistermage/coyote-js",
     "strict": true,
     "noImplicitOverride": true,
     "esModuleInterop": true,
@@ -17,10 +17,10 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "coyote-js/jsx-runtime": ["./src/dom/jsx-runtime.ts"],
-      "coyote-js/jsx-dev-runtime": ["./src/dom/jsx-runtime.ts"],
-      "coyote-js": ["./src/index.ts"],
-      "coyote-js/*": ["./src/*"]
+      "@sinistermage/coyote-js/jsx-runtime": ["./src/dom/jsx-runtime.ts"],
+      "@sinistermage/coyote-js/jsx-dev-runtime": ["./src/dom/jsx-runtime.ts"],
+      "@sinistermage/coyote-js": ["./src/index.ts"],
+      "@sinistermage/coyote-js/*": ["./src/*"]
     }
   },
   "include": ["src", "vitest.config.ts"],
