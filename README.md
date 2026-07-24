@@ -1,7 +1,7 @@
 # coyote-js
 
 coyote-js — a from-scratch, TypeScript-native, fine-grained reactive UI framework: signals, a no-VDOM JSX renderer, a client router, a typed worker-RPC pool, and a fine-grained store.
-
+(note, the commit history is due to coyoteJS being worked on in another repository before being published)
 ## Install
 
 ```bash
