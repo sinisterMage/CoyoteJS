@@ -1,0 +1,96 @@
+{
+  "name": "coyote-js",
+  "version": "0.1.0",
+  "description": "A from-scratch, TypeScript-native, fine-grained reactive UI framework: signals, a no-VDOM JSX renderer, a client router, a typed worker-RPC pool, and a fine-grained store.",
+  "type": "module",
+  "license": "MIT",
+  "private": false,
+  "author": "sinisterMage",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinisterMage/CoyoteJS.git"
+  },
+  "homepage": "https://github.com/sinisterMage/CoyoteJS#readme",
+  "bugs": {
+    "url": "https://github.com/sinisterMage/CoyoteJS/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "reactive",
+    "signals",
+    "jsx",
+    "framework",
+    "router",
+    "web-worker",
+    "store",
+    "no-vdom"
+  ],
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./reactivity": {
+      "types": "./dist/reactivity/index.d.ts",
+      "import": "./dist/reactivity/index.js"
+    },
+    "./dom": {
+      "types": "./dist/dom/index.d.ts",
+      "import": "./dist/dom/index.js"
+    },
+    "./jsx-runtime": {
+      "types": "./dist/dom/jsx-runtime.d.ts",
+      "import": "./dist/dom/jsx-runtime.js"
+    },
+    "./jsx-dev-runtime": {
+      "types": "./dist/dom/jsx-runtime.d.ts",
+      "import": "./dist/dom/jsx-runtime.js"
+    },
+    "./router": {
+      "types": "./dist/router/index.d.ts",
+      "import": "./dist/router/index.js"
+    },
+    "./worker": {
+      "types": "./dist/worker/index.d.ts",
+      "import": "./dist/worker/index.js"
+    },
+    "./store": {
+      "types": "./dist/store/index.d.ts",
+      "import": "./dist/store/index.js"
+    },
+    "./http": {
+      "types": "./dist/http/index.d.ts",
+      "import": "./dist/http/index.js"
+    },
+    "./loader": {
+      "types": "./dist/loader/index.d.ts",
+      "import": "./dist/loader/index.js"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && vite build && tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.9"
+  }
+}
