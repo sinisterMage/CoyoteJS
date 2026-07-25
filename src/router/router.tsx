@@ -5,11 +5,12 @@
 //
 // A single module-level context carries the live route + the compiled table so
 // hooks work from anywhere in the tree. `navigate` runs the router's guards,
-// honoring string redirects, before committing to history. Lazy components
-// (`() => import(...)`) are resolved through a per-route resource that integrates
-// with `<Suspense>` so a pending import shows the fallback.
+// honoring string redirects, before committing to history — and so does the
+// INITIAL location, so a deep link into a guarded route is checked too. Lazy
+// components (`() => import(...)`) are resolved through a per-route resource that
+// integrates with `<Suspense>` so a pending import shows the fallback.
 
-import { computed, untrack } from '../reactivity'
+import { computed, signal, untrack } from '../reactivity'
 import type { Accessor } from '../reactivity'
 import { Show, Suspense, createContext, useContext } from '../dom'
 import type { Component, CoyoteNode } from '../dom'
@@ -261,6 +262,33 @@ export function Router(props: RouterProps): CoyoteNode {
 
   startHistory()
 
+  // Guards must cover the INITIAL location too. Only `navigate()` runs them, so a
+  // hard refresh, a shared deep link or a bookmark into a guarded route would
+  // otherwise render it unchecked — the guard silently applies to in-app
+  // navigation only, which is the opposite of what "guard" promises.
+  //
+  // While an async initial guard is settling, the outlet renders NOTHING rather
+  // than the page it may be about to redirect away from. A guard that resolves
+  // synchronously (the usual case for a public route) never blocks: the signal is
+  // already true by the time anything renders.
+  const [initialGuard, setInitialGuard] = signal(guards.length === 0)
+  if (guards.length > 0) {
+    const settle = (redirect: string | null): void => {
+      if (redirect != null && redirect !== untrack(currentLocation).fullPath) {
+        // `replace` so the blocked entry doesn't linger in history — same policy
+        // as a redirect from navigate().
+        navigate(redirect, { replace: true })
+      }
+      setInitialGuard(true)
+    }
+    const decision = runGuards(untrack(currentLocation))
+    if (decision && typeof (decision as Promise<unknown>).then === 'function') {
+      void (decision as Promise<string | null>).then(settle)
+    } else {
+      settle(decision as string | null)
+    }
+  }
+
   const ctx: RouterContextValue = { route, compiled, guards }
 
   // `<Show keyed>` on the winning route's PATH means the page component remounts
@@ -272,27 +300,37 @@ export function Router(props: RouterProps): CoyoteNode {
   const fallbackNode = (): CoyoteNode => (props.fallback ? props.fallback({}) : null)
 
   // Pass ACCESSORS (not evaluated values) so the control-flow components react.
+  // `matchedPath` is gated on the initial guard so a guarded page never paints
+  // before the guard has had its say (and `null` keeps the 404 fallback out of it,
+  // since "still deciding" is not "no such route").
+  const readyPath = computed(() => (initialGuard() ? matchedPath() : null))
+
   const outlet = (): CoyoteNode =>
     Show({
-      when: matchedPath,
-      fallback: fallbackNode,
+      when: readyPath,
+      fallback: () => (initialGuard() ? fallbackNode() : null),
       keyed: true,
       children: () => renderComponent(untrack(currentMatch)!),
     })
 
   // Suspense children run under its context so lazy routes' resources register
-  // their pending state; the router context wraps everything so hooks resolve.
-  const body = (): CoyoteNode =>
-    RouterContext.Provider({
-      value: ctx,
-      children: () => Suspense({ fallback: null, children: outlet }),
-    })
+  // their pending state.
+  const body = (): CoyoteNode => Suspense({ fallback: null, children: outlet })
 
-  if (props.root) {
-    const Root = props.root
-    return Root({ children: body })
-  }
-  return body()
+  // The router context wraps EVERYTHING, `root` included, so a persistent shell
+  // can use <Link> and the router hooks — a nav with active-link styling is the
+  // whole point of a root layout. (The root's own markup is evaluated inside the
+  // provider's child scope, which is what `useContext`'s owner walk needs.)
+  return RouterContext.Provider({
+    value: ctx,
+    children: () => {
+      if (props.root) {
+        const Root = props.root
+        return Root({ children: body })
+      }
+      return body()
+    },
+  })
 }
 
 // --- Hooks -----------------------------------------------------------------

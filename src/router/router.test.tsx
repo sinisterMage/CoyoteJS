@@ -102,6 +102,31 @@ describe('Router matching + navigation', () => {
     expect(root.querySelector('#shell #home')).toBeTruthy()
   })
 
+  it('renders the root shell inside the router context (<Link> + hooks work)', () => {
+    // A persistent shell's whole job is app-level chrome — a nav with
+    // active-link styling, a consent banner. That needs the router context, so
+    // the shell must render INSIDE the provider, not above it.
+    const Shell: Component<{ children: any }> = (props) => (
+      <div id="shell">
+        <Link href="/about" activeClass="on">
+          about
+        </Link>
+        <span id="at">{() => useRoute()().path}</span>
+        {props.children as any}
+      </div>
+    )
+    const root = mount(() => Router({ routes, root: Shell }))
+    expect(root.querySelector('#at')?.textContent).toBe('/')
+    expect(root.querySelector('#shell a')?.getAttribute('href')).toBe('/about')
+
+    // The shell persists across navigation and its Link picks up activeClass.
+    navigate('/about')
+    flushSync()
+    expect(root.querySelector('#shell #about')).toBeTruthy()
+    expect(root.querySelector('#at')?.textContent).toBe('/about')
+    expect(root.querySelector('#shell a')?.getAttribute('class')).toContain('on')
+  })
+
   it('responds to popstate (back/forward)', () => {
     const root = mount(() => Router({ routes }))
     navigate('/about')
@@ -168,6 +193,72 @@ describe('guards', () => {
     flushSync()
     expect(ran).toBeGreaterThan(0)
     expect(root.querySelector('#about')).toBeTruthy()
+  })
+
+  // A guard that only covered in-app navigation would be worthless for auth: a
+  // hard refresh, a bookmark or a shared link goes straight to the initial
+  // location without ever calling navigate().
+  it('runs guards for the INITIAL location, not just navigate()', () => {
+    const seen: string[] = []
+    const guard: RouteGuard = (to) => {
+      seen.push(to.path)
+      return to.path === '/about' ? '/' : undefined
+    }
+    window.history.replaceState(null, '', '/about')
+    const root = mount(() => Router({ routes, guards: [guard] }))
+    flushSync()
+
+    expect(seen).toContain('/about')
+    expect(root.querySelector('#about')).toBeFalsy()
+    expect(root.querySelector('#home')).toBeTruthy()
+    expect(window.location.pathname).toBe('/')
+  })
+
+  it('renders nothing (not the page, not the 404) while an async initial guard settles', async () => {
+    const NotFound: Component = () => <div id="nf">404</div>
+    let release: () => void = () => {}
+    const gate = new Promise<void>((r) => (release = r))
+    const guard: RouteGuard = async (to) => {
+      await gate
+      return to.path === '/about' ? '/' : undefined
+    }
+    window.history.replaceState(null, '', '/about')
+    const root = mount(() => Router({ routes, guards: [guard], fallback: NotFound }))
+    flushSync()
+
+    // Mid-flight: the guarded page must not paint, and "still deciding" must not
+    // be mistaken for "no such route".
+    expect(root.querySelector('#about')).toBeFalsy()
+    expect(root.querySelector('#nf')).toBeFalsy()
+
+    release()
+    await tick()
+    flushSync()
+    expect(root.querySelector('#home')).toBeTruthy()
+    expect(window.location.pathname).toBe('/')
+  })
+
+  it('renders the initial route once a guard that allows it settles', async () => {
+    const guard: RouteGuard = async () => {
+      await Promise.resolve()
+      return undefined
+    }
+    window.history.replaceState(null, '', '/about')
+    const root = mount(() => Router({ routes, guards: [guard] }))
+    await tick()
+    flushSync()
+    expect(root.querySelector('#about')).toBeTruthy()
+    expect(window.location.pathname).toBe('/about')
+  })
+
+  it('still shows the 404 fallback for an unmatched initial path with guards present', async () => {
+    const NotFound: Component = () => <div id="nf">404</div>
+    const guard: RouteGuard = () => undefined
+    window.history.replaceState(null, '', '/nowhere')
+    const root = mount(() => Router({ routes, guards: [guard], fallback: NotFound }))
+    await tick()
+    flushSync()
+    expect(root.querySelector('#nf')).toBeTruthy()
   })
 })
 
